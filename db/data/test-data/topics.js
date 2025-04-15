@@ -1,17 +1,17 @@
 module.exports = [
   {
-    description: 'The man, the Mitch, the legend',
     slug: 'mitch',
+    description: 'The man, the Mitch, the legend',
     img_url: ""
   },
   {
-    description: 'Not dogs',
     slug: 'cats',
+    description: 'Not dogs',
     img_url: ""
   },
   {
-    description: 'what books are made of',
     slug: 'paper',
+    description: 'what books are made of',
     img_url: ""
   }
 ];
