@@ -1,6 +1,6 @@
 const db = require("../connection")
 const format = require("pg-format");
-const { formatterFunc, } = require("./utils");
+const { convertTimestampToDate, createRefObj } = require("./utils");
 
 const seed = ({ topicData, userData, articleData, commentData }) => {
   return db.query(`DROP TABLE IF EXISTS comments`)
@@ -42,50 +42,56 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
       author VARCHAR(50) REFERENCES users(username),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )`)
-  })/*.then(() => {
-    const formattedTopics = formatterFunc(topicData) 
+  }).then(() => {
+    const formattedTopics = topicData.map((topic) => {
+      return [
+        topic.slug,
+        topic.description,
+        topic.img_url
+      ]
+    });
     const topicQuery = format(`INSERT INTO topics (slug, description, img_url) VALUES %L`, formattedTopics);
     return db.query(topicQuery);
-  }).then(() => {
-    const formattedUsers = formatterFunc(userData) 
-    // const formattedUsers = userData.map((user) => {
-    //   return [
-    //     user.username,
-    //     user.name,
-    //     user.avatar_url
-    //   ]
-    // });
+  }).then(() => {    
+    const formattedUsers = userData.map((user) => {
+      return [
+        user.username,
+        user.name,
+        user.avatar_url
+      ]
+    });
     const userQuery = format(`INSERT INTO users (username, name, avatar_url) VALUES %L`, formattedUsers);
     return db.query(userQuery);
-   }).then(() => {
-    const formattedArticles = formatterFunc(articleData) 
-    // const formattedArticles = articleData.map((article) => {
-    //   const formattedDate = convertTimestampToDate(article.created_at)
-    //   return [        
-    //     article.title,
-    //     article.topic,
-    //     article.author,
-    //     article.body,
-    //     formattedDate.created_at,
-    //     article.votes,
-    //     article.article_img_url
-    //   ]
-    // });
-    const articleQuery = format(`INSERT INTO articles (title, topic, author, body, created_at, votes, article_img_url) VALUES %L`, formattedArticles);
+   }).then(() => {    
+      const formattedArticles = articleData.map((article) => {
+        const changedArticles = convertTimestampToDate(article)        
+        return [        
+          changedArticles.title,
+          changedArticles.topic,
+          changedArticles.author,
+          changedArticles.body,
+          changedArticles.created_at,
+          changedArticles.votes,
+          changedArticles.article_img_url
+        ]
+      });
+    const articleQuery = format(`INSERT INTO articles (title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *`, formattedArticles);    
     return db.query(articleQuery);
-    }).then(() => {
-      const formattedComments = formatterFunc(commentData) 
-    //   const formattedComments = commentData.map((comment) => {
-    //   const formattedDate = convertTimestampToDate(comment.created_at)
-    //   return [        
-    //     comment.body,
-    //     comment.votes,
-    //     comment.author,
-    //     formattedDate.created_at
-    //   ]
-    // });
-    const commentQuery = format(`INSERT INTO comments (body, votes, author, created_at) VALUES %L`, formattedComments);
+    }).then((result) => { 
+      console.log(result)
+      const articlesRefObj = createRefObj(result.rows);
+      const formattedComments = commentData.map((comment) => {
+      const changedComments = convertTimestampToDate(comment)
+      return [    
+        articlesRefObj[changedComments.article_title],       
+        changedComments.body,
+        changedComments.votes,
+        changedComments.author,
+        changedComments.created_at
+      ]
+    });    
+    const commentQuery = format(`INSERT INTO comments (article_id, body, votes, author, created_at) VALUES %L`, formattedComments);
     return db.query(commentQuery);
-  });*/
+  });
 };
 module.exports = seed;

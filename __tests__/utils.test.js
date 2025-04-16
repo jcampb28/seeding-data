@@ -1,5 +1,6 @@
 const {
-  convertTimestampToDate
+  convertTimestampToDate,
+  createRefObj
 } = require("../db/seeds/utils");
 
 describe("convertTimestampToDate", () => {
@@ -38,3 +39,73 @@ describe("convertTimestampToDate", () => {
   });
 });
 
+describe("createRefObj", () => {
+  test("Returns an empty object when passed an empty array", () => {
+    const input = [];
+    const result = createRefObj(input);
+    expect(result).toEqual({})
+  });
+  test("Returns a single key-value pair of article_title-article_id, when passed an array containing information from one article", () => {
+    const input = [{
+      article_id: 1,
+      title: "Living in the shadow of a great man",
+      topic: "mitch",
+      author: "butter_bridge",
+      body: "I find this existence challenging",
+      created_at: 1594329060000,
+      votes: 100,
+      article_img_url:
+        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+    }];
+    const result = createRefObj(input);
+    expect(result).toEqual({"Living in the shadow of a great man": 1})
+  });
+  test("Returns a key-value pair of article_title-article_id for each item in the array, when passed an array containing information from multiple articles", () => {
+    const input = [
+      {
+        article_id: 1,
+        title: "Living in the shadow of a great man",
+        topic: "mitch",
+        author: "butter_bridge",
+        body: "I find this existence challenging",
+        created_at: 1594329060000,
+        votes: 100,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      },
+      {
+        article_id: 2,
+        title: "UNCOVERED: catspiracy to bring down democracy",
+        topic: "cats",
+        author: "rogersop",
+        body: "Bastet walks amongst us, and the cats are taking arms!",
+        created_at: 1596464040000,
+        votes: 0,
+        article_img_url:
+          "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      }
+    ]
+    const result = createRefObj(input);
+    expect(result).toEqual({"Living in the shadow of a great man": 1, "UNCOVERED: catspiracy to bring down democracy": 2})
+  });
+  test("Does not mutate the input", () => {
+    const input = [{
+      article_id: 1,
+      title: "Living in the shadow of a great man",      
+    },
+    {
+      article_id: 2,
+      title: "UNCOVERED: catspiracy to bring down democracy",      
+    }];
+    const result = createRefObj(input);
+    const control = [{
+      article_id: 1,
+      title: "Living in the shadow of a great man",      
+    },
+    {
+      article_id: 2,
+      title: "UNCOVERED: catspiracy to bring down democracy",      
+    }]
+    expect(input).toEqual(control)
+  });
+});
