@@ -77,8 +77,7 @@ const seed = ({ topicData, userData, articleData, commentData }) => {
       });
     const articleQuery = format(`INSERT INTO articles (title, topic, author, body, created_at, votes, article_img_url) VALUES %L RETURNING *`, formattedArticles);    
     return db.query(articleQuery);
-    }).then((result) => { 
-      console.log(result)
+    }).then((result) => {       
       const articlesRefObj = createRefObj(result.rows);
       const formattedComments = commentData.map((comment) => {
       const changedComments = convertTimestampToDate(comment)
