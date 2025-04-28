@@ -44,4 +44,24 @@ const selectArticleComments = (articleId) => {
     });    
 };
 
-module.exports = { selectArticlesById, selectArticles, selectArticleComments }
+const addCommentToArticle = (username, body, articleId) => {
+    if (body.length === 0 || username.length === 0) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    } else {
+        return db.query(`SELECT * FROM articles`)
+        .then((result) => {    
+            if (articleId > result.rows.length) {
+                return Promise.reject({status: 404, msg: "No article with specified ID found"});
+            } else {    
+                return db.query(`
+                    INSERT INTO comments (author, body, article_id) VALUES($1, $2, $3) RETURNING *`, [username, body, articleId])
+                    .then((result) => {
+                        return result.rows[0]
+                    });                          
+                };
+            });
+    };
+};
+
+
+module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle }
