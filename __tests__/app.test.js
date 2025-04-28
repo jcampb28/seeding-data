@@ -4,6 +4,7 @@ const seed = require("../db/seeds/seed");
 const data = require("../db/data/test-data");
 const app = require("../api");
 const request = require("supertest");
+const jestSorted = require("jest-sorted");
 
 
 beforeEach(() => {
@@ -41,16 +42,44 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then((response) => {
-        const body = response.body;
-        expect(body).toHaveLength(3);
-        expect(Array.isArray(body)).toBe(true);
-        body.forEach((topic) => {
+        const topics = response.body;
+        expect(topics).toHaveLength(3);
+        expect(Array.isArray(topics)).toBe(true);
+        topics.forEach((topic) => {
           expect(topic).toEqual({
             slug: expect.any(String),
             description: expect.any(String)
           });
         });
       });
+  });
+});
+
+describe("GET /api/articles", () => {
+  test("200: Responds with an array containing all articles sorted in descending order by date and with a comment count but no body", () => {
+    return request(app)
+    .get("/api/articles")
+    .expect(200)
+    .then((response) => {
+      const articles = response.body;
+      expect(articles).toHaveLength(13);
+      expect(articles).toBeSortedBy("created_at", {descending: true});
+      expect(articles[0].comment_count).toBe("2");
+      expect(articles[9].comment_count).toBe("0");
+      articles.forEach((article) => {
+        expect(article).not.toHaveProperty("body");
+        expect(article).toMatchObject({
+          author: expect.any(String),
+          title: expect.any(String),
+          article_id: expect.any(Number),
+          topic: expect.any(String),
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String),
+          comment_count: expect.any(String)
+        });        
+      });
+    });
   });
 });
 
