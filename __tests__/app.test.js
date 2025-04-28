@@ -23,3 +23,33 @@ describe("GET /api", () => {
       });
   });
 });
+
+describe("Bad path", () => {
+  test("404: Responds with an error message if the endpoint is incorrect", () => {
+    return request(app)
+    .get("/api/toppics")
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("Not Found")
+    });
+  });
+})
+
+describe("GET /api/topics", () => {
+  test("200: Responds with an array containing all available topics", () => {
+    return request(app)
+    .get("/api/topics")
+    .expect(200)
+    .then((response) => {
+      const body = response.body;
+      expect(body).toHaveLength(3);
+      expect(Array.isArray(body)).toBe(true);
+      body.forEach((topic) => {
+        expect(topic).toEqual({
+          slug: expect.any(String),
+          description: expect.any(String)          
+        });
+      });
+    });
+  });  
+});
