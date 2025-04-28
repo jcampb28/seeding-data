@@ -18,10 +18,30 @@ const selectArticlesById = (articleId) => {
     return db.query(`SELECT * FROM articles WHERE article_id = $1`, [articleId])
         .then((result) => {
             if (result.rows.length === 0) {
-                return Promise.reject({status: 404, msg: "No article with specified ID found"})
+                return Promise.reject({status: 404, msg: "No article with specified ID found"});
             };
             return result.rows[0];
         });
 };
 
-module.exports = { selectArticlesById, selectArticles }
+const selectArticleComments = (articleId) => {
+    return db.query(`SELECT * FROM articles`)
+    .then((result) => {        
+        if (articleId > result.rows.length) {
+            return Promise.reject({status: 404, msg: "No article with specified ID found"});
+        } else {
+            return db.query(`
+                SELECT * FROM comments
+                WHERE article_id = $1
+                ORDER BY created_at DESC`, [articleId])
+                .then((result) => {
+                    if (result.rows.length === 0) {
+                        return Promise.reject({status: 404, msg: "No comments found for this article"});
+                    };
+                    return result.rows;
+                });
+        };
+    });    
+};
+
+module.exports = { selectArticlesById, selectArticles, selectArticleComments }
