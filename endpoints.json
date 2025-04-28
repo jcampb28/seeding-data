@@ -52,5 +52,16 @@
         "created_at": "12020-07-09T20:11:00.000Z"
       }
     ]
+  },
+  "POST: /api/articles/:article_id/comments": {
+    "description": "adds a comment to the specified article and returns an object containing the comment",
+    "exampleResponse": {
+      "comment_id": 19,
+      "votes": 0,
+      "author": "butter_bridge",
+      "body": "What a nice article",
+      "article_id": 2,
+      "created_at": "12020-07-09T20:11:00.000Z"
+    }
   }
 }
