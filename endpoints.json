@@ -80,5 +80,20 @@
   "DELETE: /api/comments/:comment_id": {
     "description": "deletes the comment with the specified ID, and returns no content",
     "expectedResponse": {"status": 204}
+  },
+  "GET: /api/users": {
+    "description": "serves an array of all users",
+    "exampleResponse": [
+      {
+        "username": "user_1",
+        "name": "jack",
+        "avatar_url": "https://nice.pics/cool_avatar_pic.jpg"
+      },
+      {
+        "username": "user_2",
+        "name": "jill",
+        "avatar_url": "https://nice.pics/cooler_avatar_pic.jpg"
+      }
+    ]
   }
 }
