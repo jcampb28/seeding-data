@@ -2,17 +2,45 @@ const db = require("../../db/connection");
 
 // GET
 
-const selectArticles = () => {
-    return db.query(`        
+const selectArticles = (queries) => {
+    let queryString = `
         SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,
-        COUNT(comments.article_id) AS comment_count    
+        COUNT(comments.article_id)::INT AS comment_count    
         FROM articles
         LEFT OUTER JOIN comments
         ON articles.article_id = comments.article_id
-        GROUP BY articles.article_id      
-        ORDER BY created_at DESC`)
-        .then((result) => {         
-            return result.rows;
+        GROUP BY articles.article_id`
+    const validOrder = ["ASC", "DESC"];
+    const validQueries = ["author", "title", "article_id", "topic", "created_at", "votes", "article_img_url", "comment_count"];
+    if (queries.sort_by && !validQueries.includes(queries.sort_by)) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    };   
+    if (queries.order && !validOrder.includes(queries.order.toUpperCase())) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    };  
+    if (!queries.sort_by && !queries.order) {
+        queryString += ` ORDER BY created_at DESC`;
+    };
+    if (queries.sort_by && validQueries.includes(queries.sort_by)) {
+        if (queries.sort_by === "comment_count") {
+            queryString += ` ORDER BY comment_count`;
+        } else {
+            queryString += ` ORDER BY articles.${queries.sort_by}`;
+            if (!queries.order) {
+                queryString += ` DESC`;
+            };
+        };
+    };
+    if (queries.order && validOrder.includes(queries.order.toUpperCase())) {
+        if (!queries.sort_by) {
+            queryString += ` ORDER BY created_at ${queries.order.toUpperCase()}`
+        } else {
+            queryString += ` ${queries.order.toUpperCase()}`;
+        };
+    };    
+    return db.query(queryString)
+    .then((result) => {    
+        return result.rows;
         });
 };
 
