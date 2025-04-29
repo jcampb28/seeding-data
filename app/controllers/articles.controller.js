@@ -3,11 +3,20 @@ const { selectArticlesById, selectArticles, selectArticleComments, addCommentToA
 // GET
 
 const getArticles = (req, res, next) => {
-    selectArticles()
+    if (Object.keys(req.query).length > 0) {
+        Object.keys(req.query).forEach((key) => {
+            if (key !== "sort_by" && key !== "order") {
+                return Promise.reject({status: 400, msg: "Bad Request"})
+                .catch(next)
+            };
+        });
+    } 
+    const {sort_by, order} = req.query
+    selectArticles({sort_by, order})
     .then((articles) => {
         res.status(200).send({articles: articles});
     }).catch(next);
-}
+};
 
 const getArticlesById = (req, res, next) => {
     const { article_id } = req.params;
@@ -15,7 +24,7 @@ const getArticlesById = (req, res, next) => {
         .then((article) => {
             res.status(200).send({article: article});
         }).catch(next); 
-}
+};
 
 const getArticleComments = (req, res, next) => {
     const {article_id} = req.params;
@@ -45,6 +54,6 @@ const patchArticleVotes = (req, res, next) => {
     .then((article) => {
         res.status(200).send({article: article})
     }).catch(next)
-}
+};
 
 module.exports = { getArticlesById, getArticles, getArticleComments, postCommentToArticle, patchArticleVotes }

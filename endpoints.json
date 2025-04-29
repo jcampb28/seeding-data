@@ -29,6 +29,16 @@
       ]
     }
   },
+  "GET /api/articles (queries)": {
+    "sort_by": {
+      "description": "sorts articles by specified column, defaulting to 'created_at', when invoked with a valid query value (e.g. sort_by=title sorts by the title column)",
+      "acceptedValues": ["author", "title", "article_id", "topic", "created_at", "votes", "article_img_url", "comment_count"]
+    },
+    "order": {
+      "description": "orders articles in ascending or descending order (defaults to descending)",
+      "acceptedValues": ["ASC", "DESC"]
+    }
+  },
   "GET /api/articles/:article_id": {
     "description": "serves an object containing the specified article",
     "exampleResponse": {

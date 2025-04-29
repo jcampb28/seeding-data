@@ -64,8 +64,8 @@ describe("GET /api/articles", () => {
         const articles = response.body.articles;
         expect(articles).toHaveLength(13);
         expect(articles).toBeSortedBy("created_at", { descending: true });
-        expect(articles[0].comment_count).toBe("2");
-        expect(articles[9].comment_count).toBe("0");
+        expect(articles[0].comment_count).toBe(2);
+        expect(articles[9].comment_count).toBe(0);
         articles.forEach((article) => {
           expect(article).not.toHaveProperty("body");
           expect(article).toMatchObject({
@@ -76,7 +76,7 @@ describe("GET /api/articles", () => {
             created_at: expect.any(String),
             votes: expect.any(Number),
             article_img_url: expect.any(String),
-            comment_count: expect.any(String)
+            comment_count: expect.any(Number)
           });
         });
       });
@@ -368,4 +368,61 @@ describe("GET /api/users", () => {
       });
     });
   });  
+});
+
+describe("GET /api/articles (sort queries)", () => {
+  test("200: Responds with an array of articles sorted by any valid column, defaulting to descending order of creation", () => {
+    return request(app)
+    .get("/api/articles?sort_by=author")
+    .expect(200)
+    .then((response) => {
+      const {articles} = response.body;
+      expect(articles).toHaveLength(13);
+      expect(articles).toBeSortedBy("author", {descending: true});
+    });
+  });
+  test("200: Articles can be sorted in either descending (default) or ascending order", () => {
+    return request(app)
+    .get("/api/articles?order=asc")
+    .expect(200)
+    .then((response) => {
+      const {articles} = response.body;
+      expect(articles).toHaveLength(13);
+      expect(articles).toBeSortedBy("created_at");
+    });
+  });
+  test("200: Articles can be sorted with both the order and sort_by queries", () => {
+    return request(app)
+    .get("/api/articles?sort_by=comment_count&order=asc")
+    .expect(200)
+    .then((response) => {
+      const {articles} = response.body;
+      expect(articles).toHaveLength(13);
+      expect(articles).toBeSortedBy("comment_count");
+    });
+  });
+  test("400: Responds with a bad request error if query is invalid", () => {
+    return request(app)
+    .get("/api/articles?banana=desc")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("400: Responds with a bad request error if the sort_by query value is invalid", () => {
+    return request(app)
+    .get("/api/articles?sort_by=banana")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("400: Responds with a bad request error if the order query value is invalid", () => {
+    return request(app)
+    .get("/api/articles?order=banana")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
 });
