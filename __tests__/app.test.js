@@ -42,7 +42,7 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then((response) => {
-        const topics = response.body;
+        const topics = response.body.topics;
         expect(topics).toHaveLength(3);
         expect(Array.isArray(topics)).toBe(true);
         topics.forEach((topic) => {
@@ -61,7 +61,7 @@ describe("GET /api/articles", () => {
     .get("/api/articles")
     .expect(200)
     .then((response) => {
-      const articles = response.body;
+      const articles = response.body.articles;
       expect(articles).toHaveLength(13);
       expect(articles).toBeSortedBy("created_at", {descending: true});
       expect(articles[0].comment_count).toBe("2");
@@ -89,7 +89,7 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/6")
       .expect(200)
       .then((response) => {
-        const body = response.body;
+        const body = response.body.article;
         expect(Object.keys(body)).toHaveLength(8);
         expect(body).toMatchObject({
           author: expect.any(String),
@@ -127,7 +127,7 @@ describe("GET /api/articles/:article_id/comments", () => {
     .get("/api/articles/9/comments")
     .expect(200)
     .then((response) => {
-      const comments = response.body;
+      const comments = response.body.comments;
       expect(comments).toHaveLength(2)
       comments.forEach((comment) => {
         expect(comment).toEqual({
@@ -141,12 +141,12 @@ describe("GET /api/articles/:article_id/comments", () => {
       });
     });
   });
-  test("404: Responds with a not found error when the article exists but has no comments", () => {
+  test("200: Responds with an empty array when the article exists but has no comments", () => {
     return request(app)
     .get("/api/articles/4/comments")
-    .expect(404)
+    .expect(200)
     .then((response) => {
-      expect(response.body.msg).toBe("No comments found for this article")
+      expect(response.body.comments).toEqual([])
     });
   });
   test("404: Responds with a not found error when the article ID provided is valid, but no article with that ID exists", () => {
@@ -175,8 +175,8 @@ describe("POST /api/articles/:article_id/comments", () => {
     .send(newComment)
     .expect(201)
     .then((response) => {
-      expect(response.body).toEqual({
-        comment_id: 19,
+      expect(response.body.comment).toEqual({
+        comment_id: expect.any(Number),
         votes: 0,
         article_id: 2,
         author: "butter_bridge",
@@ -195,14 +195,34 @@ describe("POST /api/articles/:article_id/comments", () => {
       expect(response.body.msg).toBe("Bad Request")
     });
   });
-  test("400: Responds with a bad request error if the username is an empty string", () => {
-    const newComment = {username: "", body: "What a nice article"}
+  test("400: Responds with a bad request error if the comment object has incorrect keys", () => {
+    const newComment = {}
     return request(app)
     .post("/api/articles/2/comments")
     .send(newComment)
     .expect(400)
     .then((response) => {
       expect(response.body.msg).toBe("Bad Request")
+    });
+  })
+  test("400: Responds with a bad request error when an invalid article ID is provided", () => {
+    const newComment = {username: "butter_bridge", body: "What a nice article"}
+    return request(app)
+    .post("/api/articles/banana/comments")
+    .send(newComment)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request")
+    });
+  })
+  test("404: Responds with a not found error if the username is an empty string", () => {
+    const newComment = {username: "", body: "What a nice article"}
+    return request(app)
+    .post("/api/articles/2/comments")
+    .send(newComment)
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("Username does not exist")
     });
   });
   test("404: Responds with a not found error if the comment post request is being made to a non-existent article", () => {
