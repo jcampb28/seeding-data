@@ -310,3 +310,33 @@ describe("PATCH /api/articles/:article_id", () => {
   });
 });
 
+describe("DELETE /api/comments/:comment_id", () => {
+  test("204: Deletes the comment with the specified ID and responds with no content", () => {
+    return request(app)
+    .delete("/api/comments/1")
+    .expect(204)
+    .then((response) => {
+      expect(response.body.response).toBe(undefined);
+      return db.query(`SELECT * FROM comments WHERE comment_id = 1`)
+      .then((result) => {
+        expect(result.rows.length).toBe(0);
+      });
+    });
+  });
+  test("400: Responds with a bad request error when the comment ID is not a number", () => {
+    return request(app)
+    .delete("/api/comments/banana")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("404: Responds with a bat request error when the comment ID is valid but no comment with that ID exists", () => {
+    return request(app)
+    .delete("/api/comments/256")
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("No comment with specified ID found");
+    });
+  });
+});
