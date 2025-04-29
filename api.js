@@ -2,8 +2,9 @@ const express = require("express");
 const app = express();
 const { getApi } = require("./app/controllers/api.controller");
 const { getTopics } = require("./app/controllers/topics.controller");
-const { getArticlesById, getArticles, getArticleComments, postCommentToArticle, patchArticleVotes } = require("./app/controllers/articles.controller")
-const { handlePSQLErrors, handleCustomErrors, catchAllErrors } = require("./app/controllers/error.controller")
+const { getArticlesById, getArticles, getArticleComments, postCommentToArticle, patchArticleVotes } = require("./app/controllers/articles.controller");
+const { deleteCommentById } = require("./app/controllers/comments.controller");
+const { handlePSQLErrors, handleCustomErrors, catchAllErrors } = require("./app/controllers/error.controller");
 
 app.use(express.json());
 
@@ -17,15 +18,19 @@ app.get("/api/articles", getArticles)
 
 app.get("/api/articles/:article_id", getArticlesById);
 
-app.get("/api/articles/:article_id/comments", getArticleComments)
+app.get("/api/articles/:article_id/comments", getArticleComments);
 
 // POST requests
 
-app.post("/api/articles/:article_id/comments", postCommentToArticle)
+app.post("/api/articles/:article_id/comments", postCommentToArticle);
 
 // PATCH requests
 
-app.patch("/api/articles/:article_id", patchArticleVotes)
+app.patch("/api/articles/:article_id", patchArticleVotes);
+
+// DELETE requests
+
+app.delete("/api/comments/:comment_id", deleteCommentById);
 
 // Error handling
 
@@ -33,10 +38,10 @@ app.all("/*splat", (req, res) => {
     res.status(404).send({ msg: "Not Found" })
 });
 
-app.use(handlePSQLErrors)
+app.use(handlePSQLErrors);
 
 app.use(handleCustomErrors);
 
-app.use(catchAllErrors)
+app.use(catchAllErrors);
 
 module.exports = app;

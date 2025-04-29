@@ -76,5 +76,9 @@
       "votes": 20,
       "article_img_url": "https://nice.pics/awesome_img.jpg"
     }
+  },
+  "DELETE: /api/comments/:comment_id": {
+    "description": "deletes the comment with the specified ID, and returns no content",
+    "expectedResponse": {"status": 204}
   }
 }
