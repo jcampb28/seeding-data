@@ -63,5 +63,18 @@
       "article_id": 2,
       "created_at": "12020-07-09T20:11:00.000Z"
     }
+  },
+  "PATCH: /api/articles/:article_id": {
+    "description": "updates the number of votes for the specified article and returns an object containing the article; vote count can be positive or negative",
+    "exampleResponse": { 
+      "article_id": 2,
+      "title": "My excellent article",
+      "topic": "cats",
+      "author": "butter_bridge",
+      "body": "A really awesome article about interesting things",
+      "created_at": "12020-07-09T20:11:00.000Z",
+      "votes": 20,
+      "article_img_url": "https://nice.pics/awesome_img.jpg"
+    }
   }
 }
