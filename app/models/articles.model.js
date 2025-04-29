@@ -25,19 +25,16 @@ const selectArticlesById = (articleId) => {
 };
 
 const selectArticleComments = (articleId) => {
-    return db.query(`SELECT * FROM articles`)
+    return db.query(`SELECT * FROM articles WHERE article_id = $1`, [articleId])
     .then((result) => {        
-        if (articleId > result.rows.length) {
+        if (result.rows.length === 0) {
             return Promise.reject({status: 404, msg: "No article with specified ID found"});
         } else {
             return db.query(`
                 SELECT * FROM comments
                 WHERE article_id = $1
                 ORDER BY created_at DESC`, [articleId])
-                .then((result) => {
-                    if (result.rows.length === 0) {
-                        return Promise.reject({status: 404, msg: "No comments found for this article"});
-                    };
+                .then((result) => {                    
                     return result.rows;
                 });
         };
@@ -45,9 +42,16 @@ const selectArticleComments = (articleId) => {
 };
 
 const addCommentToArticle = (username, body, articleId) => {
-    if (body.length === 0 || username.length === 0) {
+    if (username === undefined || body === undefined) {
         return Promise.reject({status: 400, msg: "Bad Request"});
-    } else {
+    } 
+    if (username.length === 0) {
+        return Promise.reject({status: 404, msg: "Username does not exist"});
+    }
+    if (body.length === 0) {
+        return Promise.reject({status: 400, msg: "Bad Request"});    
+    } 
+    else {
         return db.query(`SELECT * FROM articles`)
         .then((result) => {    
             if (articleId > result.rows.length) {
