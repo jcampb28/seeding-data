@@ -298,6 +298,16 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Bad Request");
       });
   });
+  test("400: Responds with a bad request error if the inc_votes value is not a number", () => {
+    const newVotes = { inc_votes: "potato" };
+    return request(app)
+      .patch("/api/articles/2")
+      .send(newVotes)
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+  })
   test("404: Responds with a not found error if the comment post request is being made to a non-existent article", () => {
     const newVotes = { inc_votes: 5 };
     return request(app)
@@ -357,5 +367,5 @@ describe("GET /api/users", () => {
         });
       });
     });
-  });
+  });  
 });
