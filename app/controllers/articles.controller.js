@@ -2,17 +2,17 @@ const { selectArticlesById, selectArticles, selectArticleComments, addCommentToA
 
 // GET
 
-const getArticles = (req, res, next) => {
+const getArticles = (req, res, next) => {    
     if (Object.keys(req.query).length > 0) {
         Object.keys(req.query).forEach((key) => {
-            if (key !== "sort_by" && key !== "order") {
+            if (key !== "sort_by" && key !== "order" && key !== "topic") {
                 return Promise.reject({status: 400, msg: "Bad Request"})
                 .catch(next)
             };
         });
     } 
-    const {sort_by, order} = req.query
-    selectArticles({sort_by, order})
+    const {sort_by, order, topic} = req.query
+    selectArticles({sort_by, order, topic})
     .then((articles) => {
         res.status(200).send({articles: articles});
     }).catch(next);

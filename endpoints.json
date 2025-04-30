@@ -37,7 +37,29 @@
     "order": {
       "description": "orders articles in ascending or descending order (defaults to descending)",
       "acceptedValues": ["ASC", "DESC"]
-    }
+    },
+    "topics": {
+      "description": "filters articles by specified topic, returning an array of found articles or 404 if no articles for specified topic exist",
+      "acceptedValues": "values must be a string",
+      "exampleResponse": [{
+        "title": "An article about cats",
+        "topic": "cats",
+        "author": "icellusedkars",
+        "body": "Cats are great",
+        "created_at": "2020-07-09T20:11:00.000Z",
+        "votes": 0,
+        "article_img_url": "https://nice.pics/cat-pic.jpg"    
+      },
+      {
+        "title": "An different article about cats",
+        "topic": "cats",
+        "author": "butter_bridge",
+        "body": "Cats, cats, cats",
+        "created_at": "2020-07-09T20:11:00.000Z",
+        "votes": 0,
+        "article_img_url": "https://nice.pics/pink-cat-pic.jpg"    
+      }]
+    }    
   },
   "GET /api/articles/:article_id": {
     "description": "serves an object containing the specified article",

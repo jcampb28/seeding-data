@@ -379,6 +379,7 @@ describe("GET /api/articles (sort queries)", () => {
       const {articles} = response.body;
       expect(articles).toHaveLength(13);
       expect(articles).toBeSortedBy("author", {descending: true});
+      expect(Array.isArray(articles)).toBe(true)
     });
   });
   test("200: Articles can be sorted in either descending (default) or ascending order", () => {
@@ -423,6 +424,45 @@ describe("GET /api/articles (sort queries)", () => {
     .expect(400)
     .then((response) => {
       expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+});
+
+describe("GET /api/articles (topic query)", () => {
+  test("200: Responds with an array of articles filtered by the specified topic", () => {
+    return request(app)
+    .get("/api/articles?topic=cats")
+    .expect(200)
+    .then((response) => {
+      const {articles} = response.body;
+      expect(articles).toHaveLength(1);
+      expect(articles).toEqual([{
+        author: "rogersop",
+        title: "UNCOVERED: catspiracy to bring down democracy",
+        article_id: 5,
+        comment_count: 2,
+        topic: "cats",
+        created_at: expect.any(String),
+        votes: expect.any(Number),
+        article_img_url: expect.any(String)
+      }]);
+    });
+  });
+  test("200: Responds with an empty array when the applied filter is valid but no articles with that topic exist", () => {
+    return request(app)
+    .get("/api/articles?topic=paper")
+    .expect(200)
+    .then((response) => {
+      const {articles} = response.body;
+      expect(articles).toHaveLength(0);      
+    });
+  });
+  test("404: Responds with a not found error when the filter value is invalid", () => {
+    return request(app)
+    .get("/api/articles?topic=picnics")
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("No articles with this topic found")
     });
   });
 });

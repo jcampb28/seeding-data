@@ -8,17 +8,32 @@ const selectArticles = (queries) => {
         COUNT(comments.article_id)::INT AS comment_count    
         FROM articles
         LEFT OUTER JOIN comments
-        ON articles.article_id = comments.article_id
-        GROUP BY articles.article_id`
+        ON articles.article_id = comments.article_id`
+    let totalQueries = 0;
+    const queryValues = [];
     const validOrder = ["ASC", "DESC"];
     const validQueries = ["author", "title", "article_id", "topic", "created_at", "votes", "article_img_url", "comment_count"];
+    
     if (queries.sort_by && !validQueries.includes(queries.sort_by)) {
         return Promise.reject({status: 400, msg: "Bad Request"});
-    };   
+    };  
     if (queries.order && !validOrder.includes(queries.order.toUpperCase())) {
         return Promise.reject({status: 400, msg: "Bad Request"});
     };  
-    if (!queries.sort_by && !queries.order) {
+    if (queries.topic) {
+        return isTopicValid(queries.topic)
+        .then((result) => {            
+            queryString += ` WHERE topic = $${++totalQueries} GROUP BY articles.article_id ORDER BY created_at DESC`;                
+            queryValues.push(queries.topic); 
+            return db.query(queryString, queryValues)
+            .then((result) => {        
+                return result.rows;
+            });        
+        });
+    };
+    queryString += ` GROUP BY articles.article_id`
+
+    if (!queries.sort_by && !queries.order && !queries.topic) {
         queryString += ` ORDER BY created_at DESC`;
     };
     if (queries.sort_by && validQueries.includes(queries.sort_by)) {
@@ -37,9 +52,10 @@ const selectArticles = (queries) => {
         } else {
             queryString += ` ${queries.order.toUpperCase()}`;
         };
-    };    
-    return db.query(queryString)
-    .then((result) => {    
+    };  
+      
+    return db.query(queryString, queryValues)
+    .then((result) => {         
         return result.rows;
         });
 };
@@ -118,6 +134,17 @@ const updateArticleVotes = (incVotes, articleID) => {
                 return result.rows[0];
             });  
     };
+};
+
+// UTILITY
+
+const isTopicValid = (topic) => {
+    return db.query(`SELECT * FROM topics WHERE slug = $1`, [topic])
+    .then((result) => {
+        if (result.rows.length === 0) {
+            return Promise.reject({status: 404, msg: "No articles with this topic found"});  
+        };        
+    });    
 };
 
 module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes }
