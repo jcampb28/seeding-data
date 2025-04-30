@@ -142,7 +142,7 @@ const isTopicValid = (topic) => {
     return db.query(`SELECT * FROM topics WHERE slug = $1`, [topic])
     .then((result) => {
         if (result.rows.length === 0) {
-            return Promise.reject({status: 404, msg: "No topic found"});  
+            return Promise.reject({status: 404, msg: "No articles with this topic found"});  
         };        
     });    
 };
