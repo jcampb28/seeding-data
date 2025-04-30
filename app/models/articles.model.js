@@ -68,12 +68,13 @@ const selectArticlesById = (articleId) => {
         LEFT OUTER JOIN comments
         ON articles.article_id = comments.article_id
         WHERE articles.article_id = $1
-        GROUP BY articles.article_id`, [articleId])
+        GROUP BY articles.article_id`, [articleId])        
         .then((result) => {
             if (result.rows.length === 0) {
                 return Promise.reject({status: 404, msg: "No article with specified ID found"});
             };
             return result.rows[0];
+            
         });
 };
 
@@ -153,5 +154,6 @@ const isTopicValid = (topic) => {
         };        
     });    
 };
+
 
 module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes }

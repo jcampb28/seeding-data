@@ -466,6 +466,7 @@ describe("GET /api/articles (topic query)", () => {
   });
 });
 
+
 describe("GET /api/articles/:article_id (comment_count)", () => {
   test("200: Responds with the article at the specified ID, adding a comment_count property", () => {
     return request(app)
