@@ -90,7 +90,6 @@ describe("GET /api/articles/:article_id", () => {
       .expect(200)
       .then((response) => {
         const body = response.body.article;
-        expect(Object.keys(body)).toHaveLength(8);
         expect(body).toMatchObject({
           author: expect.any(String),
           title: expect.any(String),
@@ -464,5 +463,43 @@ describe("GET /api/articles (topic query)", () => {
     .then((response) => {
       expect(response.body.msg).toBe("No articles with this topic found")
     });
+  });
+});
+
+describe("GET /api/articles/:article_id (comment_count)", () => {
+  test("200: Responds with the article at the specified ID, adding a comment_count property", () => {
+    return request(app)
+    .get("/api/articles/1")
+    .expect(200)
+    .then((response) => {
+      const {article} = response.body;
+      expect(article).toMatchObject({
+        author: "butter_bridge",
+        title: "Living in the shadow of a great man",
+        article_id: 1,
+        body: "I find this existence challenging",
+        topic: "mitch",
+        created_at: expect.any(String),
+        votes: 100,
+        article_img_url: expect.any(String),
+        comment_count: 11
+      });
+    });
+  });
+  test("400: Responds with a bad request error when the article ID provided is not a number", () => {
+    return request(app)
+      .get("/api/articles/banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request")
+      });
+  });
+  test("404: Responds with a not found error when the article ID provided is valid but no article with that ID exists", () => {
+    return request(app)
+      .get("/api/articles/256")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("No article with specified ID found");
+      });
   });
 });
