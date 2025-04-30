@@ -1,5 +1,4 @@
-const express = require("express");
-const app = express();
+const app = require("./api.js");
 const {PORT = 9090} = process.env;
 
 app.listen(PORT, () => {
