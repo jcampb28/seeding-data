@@ -31,7 +31,7 @@ describe("Bad path", () => {
       .get("/api/toppics")
       .expect(404)
       .then((response) => {
-        expect(response.body.msg).toBe("Not Found")
+        expect(response.body.msg).toBe("Not Found!")
       });
   });
 })

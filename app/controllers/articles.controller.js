@@ -2,7 +2,7 @@ const { selectArticlesById, selectArticles, selectArticleComments, addCommentToA
 
 // GET
 
-const getArticles = (req, res, next) => {    
+const getArticles = (req, res, next) => {       
     if (Object.keys(req.query).length > 0) {
         Object.keys(req.query).forEach((key) => {
             if (key !== "sort_by" && key !== "order" && key !== "topic") {
