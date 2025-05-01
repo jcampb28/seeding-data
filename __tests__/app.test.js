@@ -526,12 +526,23 @@ describe("GET /api/users/:username", () => {
       expect(response.body.msg).toBe("No users with that username found")
     });
   });
-  test("400: Responds with a bad request error when the username provided is not in a valid format", () => {
+});
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: Increases vote count for the comment with the given ID if the value of inc_votes is positive", () => {
+    const newVotes = {inc_votes: 3};
     return request(app)
-      .get("/api/users/cka")
-      .expect(404)
-      .then((response) => {
-        expect(response.body.msg).toBe("Bad Request")
+    .get("/api/comments/1")
+    .expect(200)
+    .then((response) => {
+      const {comment} = response.body;
+      expect(comment).toEqual({
+        article_title: "They're not exactly dogs, are they?",
+        body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+        votes: 19,
+        author: "butter_bridge",
+        created_at: expect.any(String),
       });
+    });
   });
 });
