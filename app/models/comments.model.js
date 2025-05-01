@@ -15,4 +15,23 @@ const removeCommentById = (commentId) => {
     });
 };
 
-module.exports = {removeCommentById};
+const updateCommentVotes = (incVotes, commentId) => {
+    if (incVotes === undefined) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    }
+    else {
+        return db.query(`
+            UPDATE comments
+            SET votes = votes + $1
+            WHERE comment_id = $2
+            RETURNING *`, [incVotes, commentId])
+            .then((response) => {
+                if (response.rows.length === 0) {
+                    return Promise.reject({status: 404, msg: "No comment with specified ID found"})
+                }
+                return response.rows[0]
+            });
+    };
+};
+
+module.exports = {removeCommentById, updateCommentVotes};

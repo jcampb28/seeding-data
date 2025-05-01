@@ -307,7 +307,7 @@ describe("PATCH /api/articles/:article_id", () => {
         expect(response.body.msg).toBe("Bad Request");
       });
   })
-  test("404: Responds with a not found error if the comment post request is being made to a non-existent article", () => {
+  test("404: Responds with a not found error if the patch request is being made to a non-existent article", () => {
     const newVotes = { inc_votes: 5 };
     return request(app)
       .patch("/api/articles/256")
@@ -525,13 +525,85 @@ describe("GET /api/users/:username", () => {
     .then((response) => {
       expect(response.body.msg).toBe("No users with that username found")
     });
-  });
-  test("400: Responds with a bad request error when the username provided is not in a valid format", () => {
+  }); 
+});
+
+describe("PATCH /api/comments/:comment_id", () => {
+  test("200: Increases vote count for the comment with the given ID if the value of inc_votes is positive", () => {
+    const newVotes = {inc_votes: 3};
     return request(app)
-      .get("/api/users/cka")
-      .expect(404)
+      .patch("/api/comments/1")
+      .send(newVotes)
+      .expect(200)
       .then((response) => {
-        expect(response.body.msg).toBe("Bad Request")
+        const {comment} = response.body;
+        expect(comment).toEqual({
+          comment_id: 1,
+          article_id: 9,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 19,
+          author: "butter_bridge",
+          created_at: expect.any(String),  
+        });
       });
   });
+  test("200: Decreases vote count for the comment with the given ID if the value of inc_votes is negative", () => {
+    const newVotes = {inc_votes: -3};
+    return request(app)
+      .patch("/api/comments/1")
+      .send(newVotes)
+      .expect(200)
+      .then((response) => {
+        const {comment} = response.body;
+        expect(comment).toEqual({
+          comment_id: 1,
+          article_id: 9,
+          body: "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+          votes: 13,
+          author: "butter_bridge",
+          created_at: expect.any(String),  
+        });
+      });
+  });
+  test("400: Responds with a bad request error when an invalid comment ID is provided", () => {
+    const newVotes = {inc_votes: 3};
+    return request(app)
+    .patch("/api/comments/banana")
+    .send(newVotes)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("400: Responds with a bad request error if the votes object has incorrect keys", () => {
+    const newVotes = {potato: 3};
+    return request(app)
+    .patch("/api/comments/1")
+    .send(newVotes)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("400: Responds with a bad request error if the inc_votes value is not a number", () => {
+    const newVotes = {inc_votes: "potato"};
+    return request(app)
+    .patch("/api/comments/1")
+    .send(newVotes)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("404: Responds with a not found error if the patch request is being made to a non-existent comment", () => {
+    const newVotes = {inc_votes: 2};
+    return request(app)
+    .patch("/api/comments/256")
+    .send(newVotes)
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("No comment with specified ID found");
+    });
+  })
 });
+

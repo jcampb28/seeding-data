@@ -88,34 +88,6 @@
       }
     ]
   },
-  "POST: /api/articles/:article_id/comments": {
-    "description": "adds a comment to the specified article and returns an object containing the comment",
-    "exampleResponse": {
-      "comment_id": 19,
-      "votes": 0,
-      "author": "butter_bridge",
-      "body": "What a nice article",
-      "article_id": 2,
-      "created_at": "12020-07-09T20:11:00.000Z"
-    }
-  },
-  "PATCH: /api/articles/:article_id": {
-    "description": "updates the number of votes for the specified article and returns an object containing the article; vote count can be positive or negative",
-    "exampleResponse": { 
-      "article_id": 2,
-      "title": "My excellent article",
-      "topic": "cats",
-      "author": "butter_bridge",
-      "body": "A really awesome article about interesting things",
-      "created_at": "12020-07-09T20:11:00.000Z",
-      "votes": 20,
-      "article_img_url": "https://nice.pics/awesome_img.jpg"
-    }
-  },
-  "DELETE: /api/comments/:comment_id": {
-    "description": "deletes the comment with the specified ID, and returns no content",
-    "expectedResponse": {"status": 204}
-  },
   "GET: /api/users": {
     "description": "serves an array of all users",
     "exampleResponse": [
@@ -130,5 +102,54 @@
         "avatar_url": "https://nice.pics/cooler_avatar_pic.jpg"
       }
     ]
+  },
+  "GET: /api/users/:username": {
+    "description": "serves an object containing information on the specified user",
+    "exampleResponse": {
+      "username": "user_1",
+      "name": "jack",
+      "avatar_url": "https://nice.pics/cool_avatar_pic.jpg"
+    }
+  },
+  "POST: /api/articles/:article_id/comments": {
+    "description": "adds a comment to the specified article and returns an object containing the comment",
+    "exampleResponse": {
+      "comment_id": 19,
+      "votes": 0,
+      "author": "butter_bridge",
+      "body": "What a nice article",
+      "article_id": 2,
+      "created_at": "12020-07-09T20:11:00.000Z"
+    }
+  },
+  "PATCH: /api/articles/:article_id": {
+    "description": "updates the number of votes for the specified article and returns an object containing the article; vote count can be positive or negative",
+    "exampleInput": {"inc_votes": 3},
+    "exampleResponse": {
+      "article_id": 2,
+      "title": "My excellent article",
+      "topic": "cats",
+      "author": "butter_bridge",
+      "body": "A really awesome article about interesting things",
+      "created_at": "12020-07-09T20:11:00.000Z",
+      "votes": 20,
+      "article_img_url": "https://nice.pics/awesome_img.jpg"
+    }
+  },  
+  "PATCH: /api/comments/:comment_id": {
+    "description": "updates the number of votes for the specified comment and returns an object containing the comment; vote count can be positive or negative",
+    "exampleInput": {"inc_votes": 3},
+    "exampleResponse": {
+      "comment_id": 1,
+      "article_id": 9,
+      "body": "Oh, I've got compassion running out of my nose, pal! I'm the Sultan of Sentiment!",
+      "votes": 19,
+      "author": "butter_bridge",
+      "created_at": "12020-07-09T20:11:00.000Z"
+    }
+  },
+  "DELETE: /api/comments/:comment_id": {
+    "description": "deletes the comment with the specified ID, and returns no content",
+    "expectedResponse": {"status": 204}
   }
 }
