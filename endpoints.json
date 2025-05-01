@@ -111,6 +111,7 @@
       "avatar_url": "https://nice.pics/cool_avatar_pic.jpg"
     }
   },
+   
   "POST: /api/articles/:article_id/comments": {
     "description": "adds a comment to the specified article and returns an object containing the comment",
     "exampleResponse": {
@@ -122,6 +123,21 @@
       "created_at": "12020-07-09T20:11:00.000Z"
     }
   },
+  "POST /api/articles": {
+      "description": "add a new article to the articles table and returns the new article, using a default image url if one is not provided",
+      "expectedResponse": {
+        "author": "rogersop",
+        "title": "A very interesting article on paper",
+        "body": "Paper is really interesting",
+        "topic": "paper",
+        "article_img_url": "https://nice.pics/paper.jpg",
+        "article_id": 14,
+        "votes": 0,
+        "created_at": "12020-07-09T20:11:00.000Z",
+        "comment_count": 0
+      },
+      "defaultArticleImg": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+  }, 
   "PATCH: /api/articles/:article_id": {
     "description": "updates the number of votes for the specified article and returns an object containing the article; vote count can be positive or negative",
     "exampleInput": {"inc_votes": 3},
@@ -151,5 +167,5 @@
   "DELETE: /api/comments/:comment_id": {
     "description": "deletes the comment with the specified ID, and returns no content",
     "expectedResponse": {"status": 204}
-  }
+  }   
 }

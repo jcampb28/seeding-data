@@ -461,7 +461,7 @@ describe("GET /api/articles (topic query)", () => {
     .get("/api/articles?topic=picnics")
     .expect(404)
     .then((response) => {
-      expect(response.body.msg).toBe("No articles with this topic found")
+      expect(response.body.msg).toBe("Topic category not found")
     });
   });
 });
@@ -607,3 +607,114 @@ describe("PATCH /api/comments/:comment_id", () => {
   })
 });
 
+describe("POST /api/articles", () => {
+  test("201: Adds a new article and responds with the posted article", () => {
+    const newArticle = {
+      author: "rogersop",
+      title: "A very interesting article on paper",
+      body: "Paper is really interesting",
+      topic: "paper",
+      article_img_url: "https://nice.pics/paper.jpg",
+    };
+    return request(app)
+    .post("/api/articles")
+    .send(newArticle)
+    .expect(201)
+    .then((response) => {
+      const {article} = response.body;
+      expect(article).toEqual({
+        author: "rogersop",
+        title: "A very interesting article on paper",
+        body: "Paper is really interesting",
+        topic: "paper",
+        article_img_url: "https://nice.pics/paper.jpg",
+        article_id: 14,
+        votes: 0,
+        created_at: expect.any(String),
+        comment_count: 0
+      });
+      return db.query(`SELECT * FROM articles`)
+      .then((result) => {
+        expect(result.rows.length).toBe(14);
+      });
+    });
+  });
+  test("201: article_img_url will default if not provided", () => {
+    const newArticle = {
+      author: "rogersop",
+      title: "A very interesting article on paper",
+      body: "Paper is really interesting",
+      topic: "paper",
+    };
+    return request(app)
+    .post("/api/articles")
+    .send(newArticle)
+    .expect(201)
+    .then((response) => {
+      const {article} = response.body;
+      expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700");    
+    });
+  });
+  test("400: Responds with a bad request error if the comment object has incorrect keys", () => {
+    const newArticle = {
+      cheesecake: "rogersop",
+      chocolate: "A very interesting article on paper",
+      banana: "Paper is really interesting",
+      crisps: "paper",
+    };
+    return request(app)
+    .post("/api/articles")
+    .send(newArticle)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("400: Responds with a bad request error if any key except article_img_url is undefined", () => {
+    const newArticle = {
+      title: "A very interesting article on paper",
+      body: "Paper is really interesting",
+      topic: "paper",
+      article_img_url: "https://nice.pics/paper.jpg",
+    };
+    return request(app)
+    .post("/api/articles")
+    .send(newArticle)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request");
+    });
+  });
+  test("404: Responds with a not found error if given topic is not valid", () => {
+    const newArticle = {
+      author: "rogersop",
+      title: "A very interesting article on paper",
+      body: "Paper is really interesting",
+      topic: "printing",
+      article_img_url: "https://nice.pics/paper.jpg",
+    };
+    return request(app)
+    .post("/api/articles")
+    .send(newArticle)
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("Topic category not found");
+    });
+  });
+  test("404: Responds with a not found error if given author is not valid", () => {
+    const newArticle = {
+      author: "fake-user",
+      title: "A very interesting article on paper",
+      body: "Paper is really interesting",
+      topic: "paper",
+      article_img_url: "https://nice.pics/paper.jpg",
+    };
+    return request(app)
+    .post("/api/articles")
+    .send(newArticle)
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("User not found");
+    });
+  });
+});

@@ -1,3 +1,4 @@
+const { response } = require("../../api");
 const db = require("../../db/connection");
 
 // GET
@@ -122,6 +123,39 @@ const addCommentToArticle = (username, body, articleId) => {
     };
 };
 
+const addNewArticle = (article) => {
+    for (const key in article) {
+        if (article[key] === undefined) {
+            return Promise.reject({status: 400, msg: "Bad Request"});
+        };
+    };
+
+    return isTopicValid(article.topic)
+    .then(() => {
+        return isAuthorValid(article.author)
+        .then(() => {
+            return db.query(`
+                INSERT INTO articles (author, title, body, topic, article_img_url)
+                VALUES($1, $2, $3, $4, $5) RETURNING *`, [article.author, article.title, article.body, article.topic, article.article_img_url])
+            .then((result) => {
+                console.log(result)
+                const {article_id} = result.rows[0];
+                return db.query(`
+                    SELECT articles.author, articles.title, articles.body, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,
+                    COUNT(comments.article_id)::INT AS comment_count    
+                    FROM articles
+                    LEFT OUTER JOIN comments            
+                    ON articles.article_id = comments.article_id
+                    WHERE articles.article_id = $1
+                    GROUP BY articles.article_id`, [article_id])
+                    .then((response) => {
+                         return response.rows[0];
+                    });
+            });       
+        })
+    });
+};
+
 // PATCH
 
 const updateArticleVotes = (incVotes, articleID) => {
@@ -149,9 +183,18 @@ const isTopicValid = (topic) => {
     return db.query(`SELECT * FROM topics WHERE slug = $1`, [topic])
     .then((result) => {
         if (result.rows.length === 0) {
-            return Promise.reject({status: 404, msg: "No articles with this topic found"});  
+            return Promise.reject({status: 404, msg: "Topic category not found"});  
         };        
     });    
 };
 
-module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes }
+const isAuthorValid = (author) => {
+    return db.query(`SELECT * FROM users WHERE username = $1`, [author])
+    .then((result) => {
+        if (result.rows.length === 0) {
+            return Promise.reject({status: 404, msg: "User not found"});  
+        };        
+    }); 
+};
+
+module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle }

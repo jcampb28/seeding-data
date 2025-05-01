@@ -1,4 +1,4 @@
-const { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes } = require("../models/articles.model")
+const { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle } = require("../models/articles.model")
 
 // GET
 
@@ -45,6 +45,23 @@ const postCommentToArticle = (req, res, next) => {
     }).catch(next);
 };
 
+const postNewArticle = (req, res, next) => {
+    if (req.body.article_img_url === undefined) {
+        req.body.article_img_url = "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+        const {author, title, body, topic, article_img_url} = req.body
+        addNewArticle({author, title, body, topic, article_img_url})
+        .then((article) => {
+            res.status(201).send({article});
+        }).catch(next); 
+    } else {
+        const {author, title, body, topic, article_img_url} = req.body;
+        addNewArticle({author, title, body, topic, article_img_url})
+        .then((article) => {
+            res.status(201).send({article});
+        }).catch(next);
+    };
+};
+
 // PATCH
 
 const patchArticleVotes = (req, res, next) => {
@@ -56,4 +73,4 @@ const patchArticleVotes = (req, res, next) => {
     }).catch(next)
 };
 
-module.exports = { getArticlesById, getArticles, getArticleComments, postCommentToArticle, patchArticleVotes }
+module.exports = { getArticlesById, getArticles, getArticleComments, postCommentToArticle, patchArticleVotes, postNewArticle }
