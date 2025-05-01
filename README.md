@@ -12,7 +12,7 @@ NOTE: this project requires Node v23.10.0 or later and PosgreSQL v14.17 or later
 
 2. Install dependencies using `npm install`
 
-3. .env setup:
+3. Set up .env files:
 
    a. In the terminal, run `setup-dbs` to set up the databases:     
 
@@ -31,7 +31,7 @@ NOTE: this project requires Node v23.10.0 or later and PosgreSQL v14.17 or later
 
 4. Seed the development database with `npm run seed-dev`
 
-5. To run seeding tests, use the terminal command `npm test seed`
+To run seeding tests, use the terminal command `npm test seed`
 
-5. To run application tests, use the terminal command `npm test app`
+To run application tests, use the terminal command `npm test app`
 

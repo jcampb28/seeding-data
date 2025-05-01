@@ -503,3 +503,35 @@ describe("GET /api/articles/:article_id (comment_count)", () => {
       });
   });
 });
+
+describe("GET /api/users/:username", () => {
+  test("200: Responds with an object containing information on the specified user", () => {
+    return request(app)
+    .get("/api/users/rogersop")
+    .expect(200)
+    .then((response) => {
+      const {user} = response.body
+      expect(user).toEqual({
+        username: "rogersop",
+        name: "paul",
+        avatar_url: "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4",  
+      });
+    });
+  });
+  test("404: Responds with a not found error when no user with that username exists", () => {
+    return request(app)
+    .get("/api/users/iluvpicnics")
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("No users with that username found")
+    });
+  });
+  test("400: Responds with a bad request error when the username provided is not in a valid format", () => {
+    return request(app)
+      .get("/api/users/cka")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request")
+      });
+  });
+});
