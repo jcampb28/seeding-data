@@ -25,8 +25,15 @@ const getArticlesById = (req, res, next) => {
 };
 
 const getArticleComments = (req, res, next) => {
+    const validQueries = ["limit", "p"]   
+    for (const key in req.query) {
+        if (!validQueries.includes(key)) {
+            return Promise.reject({status: 400, msg: "Bad Request"})
+        }
+    }
     const {article_id} = req.params;
-    selectArticleComments(article_id)
+    const {limit, p} = req.query;
+    selectArticleComments(article_id, {limit, p})
     .then((comments) => {
         res.status(200).send({comments});
     }).catch(next);

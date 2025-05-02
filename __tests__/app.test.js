@@ -61,12 +61,12 @@ describe("GET /api/articles", () => {
       .get("/api/articles")
       .expect(200)
       .then((response) => {
-        const {articleArr} = response.body.articles;
-        expect(articleArr).toHaveLength(10);
-        expect(articleArr).toBeSortedBy("created_at", { descending: true });
-        expect(articleArr[0].comment_count).toBe(2);
-        expect(articleArr[9].comment_count).toBe(0);
-        articleArr.forEach((article) => {
+        const {resultsArr} = response.body.articles;
+        expect(resultsArr).toHaveLength(10);
+        expect(resultsArr).toBeSortedBy("created_at", { descending: true });
+        expect(resultsArr[0].comment_count).toBe(2);
+        expect(resultsArr[9].comment_count).toBe(0);
+        resultsArr.forEach((article) => {
           expect(article).not.toHaveProperty("body");
           expect(article).toMatchObject({
             author: expect.any(String),
@@ -88,9 +88,9 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body;
-        expect(articles.articleArr).toHaveLength(10);
-        expect(articles.articleArr).toBeSortedBy("author", {descending: true});
-        expect(Array.isArray(articles.articleArr)).toBe(true)
+        expect(articles.resultsArr).toHaveLength(10);
+        expect(articles.resultsArr).toBeSortedBy("author", {descending: true});
+        expect(Array.isArray(articles.resultsArr)).toBe(true)
       });
     });
     test("200: Articles can be sorted in either descending (default) or ascending order", () => {
@@ -99,8 +99,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body;
-        expect(articles.articleArr).toHaveLength(10);
-        expect(articles.articleArr).toBeSortedBy("created_at");
+        expect(articles.resultsArr).toHaveLength(10);
+        expect(articles.resultsArr).toBeSortedBy("created_at");
       });
     });
     test("200: Articles can be sorted with both the order and sort_by queries", () => {
@@ -109,8 +109,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body;
-        expect(articles.articleArr).toHaveLength(10);
-        expect(articles.articleArr).toBeSortedBy("comment_count");
+        expect(articles.resultsArr).toHaveLength(10);
+        expect(articles.resultsArr).toBeSortedBy("comment_count");
       });
     });
     test("400: Responds with a bad request error if query is invalid", () => {
@@ -146,8 +146,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body;
-        expect(articles.articleArr).toHaveLength(1);
-        expect(articles.articleArr).toEqual([{
+        expect(articles.resultsArr).toHaveLength(1);
+        expect(articles.resultsArr).toEqual([{
           author: "rogersop",
           title: "UNCOVERED: catspiracy to bring down democracy",
           article_id: 5,
@@ -165,7 +165,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body;
-        expect(articles.articleArr).toHaveLength(0);      
+        expect(articles.resultsArr).toHaveLength(0);      
       });
     });
     test("404: Responds with a not found error when the filter value is invalid", () => {
@@ -184,8 +184,8 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body;
-        expect(articles.articleArr).toBeSortedBy("created_at", {descending: true})
-        expect(articles.articleArr).toHaveLength(5);
+        expect(articles.resultsArr).toBeSortedBy("created_at", {descending: true})
+        expect(articles.resultsArr).toHaveLength(5);
         expect(articles.total_count).toBe(13);
       });
     });
@@ -196,12 +196,12 @@ describe("GET /api/articles", () => {
         .expect(200)
         .then((response) => {
           const {articles} = response.body;
-          expect(articles.articleArr).toHaveLength(5);
-          expect(articles.articleArr[0].article_id).toBe(5);
-          expect(articles.articleArr[1].article_id).toBe(1);
-          expect(articles.articleArr[2].article_id).toBe(9);
-          expect(articles.articleArr[3].article_id).toBe(10);
-          expect(articles.articleArr[4].article_id).toBe(4);
+          expect(articles.resultsArr).toHaveLength(5);
+          expect(articles.resultsArr[0].article_id).toBe(5);
+          expect(articles.resultsArr[1].article_id).toBe(1);
+          expect(articles.resultsArr[2].article_id).toBe(9);
+          expect(articles.resultsArr[3].article_id).toBe(10);
+          expect(articles.resultsArr[4].article_id).toBe(4);
         });
       });
       test("200: Limit not specified", () => {
@@ -210,10 +210,10 @@ describe("GET /api/articles", () => {
         .expect(200)
         .then((response) => {
           const {articles} = response.body;
-          expect(articles.articleArr).toHaveLength(3);
-          expect(articles.articleArr[0].article_id).toBe(8);
-          expect(articles.articleArr[2].article_id).toBe(7);
-          expect(articles.articleArr).toBeSortedBy("created_at", {descending: true});
+          expect(articles.resultsArr).toHaveLength(3);
+          expect(articles.resultsArr[0].article_id).toBe(8);
+          expect(articles.resultsArr[2].article_id).toBe(7);
+          expect(articles.resultsArr).toBeSortedBy("created_at", {descending: true});
         });
       });
       test("200: Limit higher than total article count", () => {
@@ -222,7 +222,7 @@ describe("GET /api/articles", () => {
         .expect(200)
         .then((response) => {
           const {articles} = response.body;
-          expect(articles.articleArr).toHaveLength(13)
+          expect(articles.resultsArr).toHaveLength(13)
         });
       });
     });
@@ -232,12 +232,12 @@ describe("GET /api/articles", () => {
         .expect(200)
         .then((response) => {
           const {articles} = response.body;
-          expect(articles.articleArr).toHaveLength(5);
-          expect(articles.articleArr[0].article_id).toBe(3);
-          expect(articles.articleArr[1].article_id).toBe(6);
-          expect(articles.articleArr[2].article_id).toBe(2);
-          expect(articles.articleArr[3].article_id).toBe(12);
-          expect(articles.articleArr[4].article_id).toBe(13);
+          expect(articles.resultsArr).toHaveLength(5);
+          expect(articles.resultsArr[0].article_id).toBe(3);
+          expect(articles.resultsArr[1].article_id).toBe(6);
+          expect(articles.resultsArr[2].article_id).toBe(2);
+          expect(articles.resultsArr[3].article_id).toBe(12);
+          expect(articles.resultsArr[4].article_id).toBe(13);
           expect(articles.total_count).toBe(12);
         });
     });
@@ -247,7 +247,7 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body
-        expect(articles.articleArr).toHaveLength(0)
+        expect(articles.resultsArr).toHaveLength(0)
       });
     });
     test("400: Responds with bad request error when specified limit is not a number", () => {
@@ -357,7 +357,71 @@ describe("GET /api/articles/:article_id/comments", () => {
       .then((response) => {
         expect(response.body.msg).toBe("Bad Request")
       });
-  })
+  });
+  describe("GET /api/articles/:article_id/comments (pagination)", () => {
+    test("200: Responds with an array of comments limited to the number specified", () => {
+      return request(app)
+      .get("/api/articles/1/comments?limit=5")
+      .expect(200)
+      .then((response) => {
+        const {comments} = response.body;
+        expect(comments.length).toBe(5);
+        expect(comments).toBeSortedBy("created_at", {descending: true});
+        expect(comments[0].comment_id).toBe(5);
+        expect(comments[4].comment_id).toBe(7);
+      });
+    });
+    test("200: The default limit is set to 10", () => {
+      return request(app)
+      .get("/api/articles/1/comments")
+      .expect(200)
+      .then((response) => {
+        const {comments} = response.body;
+        expect(comments.length).toBe(10);
+        expect(comments).toBeSortedBy("created_at", {descending: true});
+        expect(comments[0].comment_id).toBe(5);
+        expect(comments[9].comment_id).toBe(4);
+      });
+    });
+    test("200: When a page number is specified, returns only comments on that page", () => {
+      return request(app)
+      .get("/api/articles/1/comments?limit=5&p=2")
+      .expect(200)
+      .then((response) => {
+        const {comments} = response.body;
+        expect(comments.length).toBe(5);
+        expect(comments).toBeSortedBy("created_at", {descending: true});
+        expect(comments[0].comment_id).toBe(8);
+        expect(comments[4].comment_id).toBe(4);
+      });
+    });
+    test("200: Returns an empty array when the page number is too high to show any comments", () => {
+      return request(app)
+      .get("/api/articles/1/comments?p=200")
+      .expect(200)
+      .then((response) => {
+        const {comments} = response.body;
+        expect(comments.length).toBe(0);
+        expect(comments).toEqual([]);
+      });
+    });
+    test("400: Returns a bad request error when the query is invalid", () => {
+      return request(app)
+      .get("/api/articles/1/comments?banana=7")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request")
+      });
+    });
+    test("400: Returns a bad request error when the query value is not an integer", () => {
+      return request(app)
+      .get("/api/articles/1/comments?limit=banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request")
+      });
+    });
+  });
 });
 
 describe("POST /api/articles/:article_id/comments", () => {

@@ -32,8 +32,12 @@ const selectArticles = (queries) => {
             queryString += ` WHERE topic = $${++totalQueries} GROUP BY articles.article_id ORDER BY created_at DESC`;                
             queryValues.push(queries.topic); 
             return db.query(queryString, queryValues)
-            .then((result) => {    
-                return paginator(result.rows, queries.limit, queries.p)
+            .then((result) => {
+                const articles = {
+                    resultsArr: paginator(result.rows, queries.limit, queries.p),
+                    total_count: result.rows.length
+                }    
+                return articles
             });        
         });
     };
@@ -62,7 +66,11 @@ const selectArticles = (queries) => {
       
     return db.query(queryString, queryValues)
     .then((result) => { 
-        return paginator(result.rows, queries.limit, queries.p)
+        const articles = {
+            resultsArr: paginator(result.rows, queries.limit, queries.p),
+            total_count: result.rows.length
+        } 
+        return articles
         });
 };
 
@@ -83,7 +91,13 @@ const selectArticlesById = (articleId) => {
         });
 };
 
-const selectArticleComments = (articleId) => {
+const selectArticleComments = (articleId, queries) => {
+    if (queries.limit && Number(queries.limit) / 1 !== Number(queries.limit)) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    }
+    if (queries.p && Number(queries.p) / 1 !== Number(queries.p)) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    }
     return db.query(`SELECT * FROM articles WHERE article_id = $1`, [articleId])
     .then((result) => {        
         if (result.rows.length === 0) {
@@ -94,7 +108,7 @@ const selectArticleComments = (articleId) => {
                 WHERE article_id = $1
                 ORDER BY created_at DESC`, [articleId])
                 .then((result) => {                    
-                    return result.rows;
+                    return paginator(result.rows, queries.limit, queries.p);
                 });
         };
     });    
@@ -204,28 +218,25 @@ const isAuthorValid = (author) => {
 const paginator = (array, limit, p) => {
         let lowerLimit = 0;
         let upperLimit = 10;    
-        const articles = {
-            total_count: array.length,
-            articleArr: array.slice(lowerLimit, upperLimit),
-        };
+        let resultsArr = array.slice(lowerLimit, upperLimit)
         if (limit) {
             if (p) {
                 upperLimit = limit * p;
                 lowerLimit = upperLimit - limit;
-                articles.articleArr = array.slice(lowerLimit, upperLimit);
-                return articles;
+                resultsArr = array.slice(lowerLimit, upperLimit);
+                return resultsArr;
             } else {
-                articles.articleArr = array.slice(0, limit);
-                return articles;
+                resultsArr = array.slice(0, limit);
+                return resultsArr;
             };
         };
         if (p) {
             upperLimit = upperLimit * p
             lowerLimit = upperLimit - 10
-            articles.articleArr = array.slice(lowerLimit, upperLimit)
-            return articles            
+            resultsArr = array.slice(lowerLimit, upperLimit)
+            return resultsArr          
         };
-        return articles;
+        return resultsArr;
 };
 module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle }
 
