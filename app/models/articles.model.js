@@ -98,6 +98,7 @@ const selectArticleComments = (articleId, queries) => {
     if (queries.p && Number(queries.p) / 1 !== Number(queries.p)) {
         return Promise.reject({status: 400, msg: "Bad Request"});
     }
+   
     return db.query(`SELECT * FROM articles WHERE article_id = $1`, [articleId])
     .then((result) => {        
         if (result.rows.length === 0) {
@@ -111,7 +112,8 @@ const selectArticleComments = (articleId, queries) => {
                     return paginator(result.rows, queries.limit, queries.p);
                 });
         };
-    });    
+    });            
+
 };
 
 // POST
@@ -268,4 +270,6 @@ const paginator = (array, limit, p) => {
         };
         return resultsArr;
 };
+
+
 module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle, removeArticle }
