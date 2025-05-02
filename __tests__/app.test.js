@@ -583,7 +583,7 @@ describe("DELETE /api/comments/:comment_id", () => {
     .delete("/api/comments/1")
     .expect(204)
     .then((response) => {
-      expect(response.body.response).toBe(undefined);
+      expect(response.body).toEqual({});
       return db.query(`SELECT * FROM comments WHERE comment_id = 1`)
       .then((result) => {
         expect(result.rows.length).toBe(0);
