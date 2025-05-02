@@ -1,8 +1,18 @@
 # NC News Seeding
 
-This is the backend of a database seeding/hosting project that serves news articles and allows registered users to leave comments on the articles.
+This is the backend of a database seeding/hosting project that serves news articles.
+The hosted app can be found here: `https://nc-news-jc28.onrender.com/api`.
 
-The hosted app can be found here: `https://nc-news-jc28.onrender.com/api`
+There are several core functionalities:
+   1. Articles, users, article topics and comments can be retrieved,
+
+   2. Posting and deletion of comments and articles,
+
+   3. An adjustable vote property on articles and comments,
+   
+   4. Sorting, filtering and pagination for articles; pagination for comments.
+
+More information on functionality, including accepted inputs and expected responses can be found at the `/api` endpoint in the hosted app, or in the `endpoints.json` file if running this project locally.
 
 To run this project locally, follow these instructions:
 
