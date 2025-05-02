@@ -42,7 +42,7 @@ describe("GET /api/topics", () => {
       .get("/api/topics")
       .expect(200)
       .then((response) => {
-        const topics = response.body.topics;
+        const {topics} = response.body;
         expect(topics).toHaveLength(3);
         expect(Array.isArray(topics)).toBe(true);
         topics.forEach((topic) => {
@@ -283,8 +283,8 @@ describe("GET /api/articles/:article_id", () => {
       .get("/api/articles/6")
       .expect(200)
       .then((response) => {
-        const body = response.body.article;
-        expect(body).toMatchObject({
+        const {article} = response.body;
+        expect(article).toMatchObject({
           author: expect.any(String),
           title: expect.any(String),
           article_id: expect.any(Number),
@@ -320,7 +320,7 @@ describe("GET /api/articles/:article_id/comments", () => {
       .get("/api/articles/9/comments")
       .expect(200)
       .then((response) => {
-        const comments = response.body.comments;
+        const {comments} = response.body;
         expect(comments).toHaveLength(2)
         comments.forEach((comment) => {
           expect(comment).toEqual({
@@ -502,8 +502,8 @@ describe("PATCH /api/articles/:article_id", () => {
       .send(newVotes)
       .expect(200)
       .then((response) => {
-        const updatedArticle = response.body.article;
-        expect(updatedArticle).toEqual({
+        const {article} = response.body;
+        expect(article).toEqual({
           article_id: 2,
           title: "Sony Vaio; or, The Laptop",
           topic: "mitch",
@@ -522,8 +522,8 @@ describe("PATCH /api/articles/:article_id", () => {
       .send(newVotes)
       .expect(200)
       .then((response) => {
-        const updatedArticle = response.body.article;
-        expect(updatedArticle).toEqual({
+        const {article} = response.body;
+        expect(article).toEqual({
           article_id: 1,
           title: "Living in the shadow of a great man",
           topic: "mitch",
@@ -598,7 +598,7 @@ describe("DELETE /api/comments/:comment_id", () => {
       expect(response.body.msg).toBe("Bad Request");
     });
   });
-  test("404: Responds with a bat request error when the comment ID is valid but no comment with that ID exists", () => {
+  test("404: Responds with a not found error when the comment ID is valid but no comment with that ID exists", () => {
     return request(app)
     .delete("/api/comments/256")
     .expect(404)
@@ -918,6 +918,53 @@ describe("POST: /api/topics", () => {
     .expect(400)
     .then((response) => {
       expect(response.body.msg).toBe("Bad Request")
+    });
+  });
+});
+
+describe("DELETE: /api/articles/:article_id", () => {
+  test("204: Deletes the article with the specified ID", () => {
+    return request(app)
+    .delete("/api/articles/4")
+    .expect(204)
+    .then((response) => {
+      expect(response.body).toEqual({});
+      return db.query(`SELECT * FROM articles`)
+      .then((result) => {
+        expect(result.rows).toHaveLength(12);
+      });
+    });
+  });
+  test("204: If the article has comments, also deletes the comments", () => {
+    return request(app)
+    .delete("/api/articles/9")
+    .expect(204)
+    .then((response) => {
+      expect(response.body).toEqual({});
+      return db.query(`SELECT * FROM articles`)
+      .then((result) => {
+        expect(result.rows).toHaveLength(12);
+        return db.query(`SELECT * FROM comments`)
+        .then((comments) => {
+          expect(comments.rows).toHaveLength(16)
+        });
+      });
+    });
+  });
+  test("400: Returns a bad request error if the article ID is invalid", () => {
+    return request(app)
+    .delete("/api/articles/potato")
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request")
+    });
+  });
+  test("404: Returns a not found error if no article with the specified ID exists", () => {
+    return request(app)
+    .delete("/api/articles/253")
+    .expect(404)
+    .then((response) => {
+      expect(response.body.msg).toBe("No article with specified ID found")
     });
   });
 });

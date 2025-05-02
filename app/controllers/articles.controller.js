@@ -1,4 +1,4 @@
-const { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle } = require("../models/articles.model")
+const { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle, removeArticle } = require("../models/articles.model")
 
 // GET
 
@@ -78,4 +78,14 @@ const patchArticleVotes = (req, res, next) => {
     }).catch(next)
 };
 
-module.exports = { getArticlesById, getArticles, getArticleComments, postCommentToArticle, patchArticleVotes, postNewArticle }
+// DELETE
+
+const deleteArticle = (req, res, next) => {
+    const {article_id} = req.params;
+    removeArticle(article_id)
+    .then(() => {
+        res.status(204).send()
+    }).catch(next);
+};
+
+module.exports = { getArticlesById, getArticles, getArticleComments, postCommentToArticle, patchArticleVotes, postNewArticle, deleteArticle }

@@ -195,6 +195,36 @@ const updateArticleVotes = (incVotes, articleID) => {
     };
 };
 
+// DELETE
+
+const removeArticle = (articleId) => {
+    return db.query("SELECT * FROM articles WHERE article_id = $1", [articleId])
+    .then((result) => {
+        if (result.rows.length === 0) {
+            return Promise.reject({status: 404, msg: "No article with specified ID found"})
+        } else {
+            return db.query(`SELECT * FROM comments WHERE article_id = $1`, [articleId])
+            .then((result) => {
+                if (result.rows === 0) {
+                    return db.query(`DELETE FROM articles WHERE article_id = $1`, [articleId])
+                    .then((result) => {
+                        return result.rows
+                    });
+                } else {
+                    return db.query(`DELETE FROM comments WHERE article_id = $1`, [articleId])
+                    .then(() => {
+                        return db.query(`DELETE FROM articles WHERE article_id = $1`, [articleId])
+                        .then((result) => {
+                            return result.rows
+                        });
+                    });
+                };
+            });
+        };
+    });
+    
+};
+
 // UTILITY
 
 const isTopicValid = (topic) => {
@@ -238,7 +268,4 @@ const paginator = (array, limit, p) => {
         };
         return resultsArr;
 };
-module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle }
-
-
-// NEW TESTS ADDED ON LINES 219 and 162!!!!!!!!!!
+module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle, removeArticle }

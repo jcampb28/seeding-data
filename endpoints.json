@@ -202,5 +202,9 @@
   "DELETE: /api/comments/:comment_id": {
     "description": "deletes the comment with the specified ID, and returns no content",
     "expectedResponse": {"status": 204}
+  },
+  "DELETE: /api/articles/:article_id": {
+    "description": "deletes the article with the specified ID, along with any related comments; returns no content",
+    "exampleResponse": {"status": 204}
   }   
 }
