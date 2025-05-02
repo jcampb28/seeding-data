@@ -56,17 +56,17 @@ describe("GET /api/topics", () => {
 });
 
 describe("GET /api/articles", () => {
-  test("200: Responds with an array containing all articles sorted in descending order by date and with a comment count but no body", () => {
+  test("200: Responds with an array containing articles sorted in descending order by date and with a comment count but no body (limited to 10 articles)", () => {
     return request(app)
       .get("/api/articles")
       .expect(200)
       .then((response) => {
-        const articles = response.body.articles;
-        expect(articles).toHaveLength(13);
-        expect(articles).toBeSortedBy("created_at", { descending: true });
-        expect(articles[0].comment_count).toBe(2);
-        expect(articles[9].comment_count).toBe(0);
-        articles.forEach((article) => {
+        const {articleArr} = response.body.articles;
+        expect(articleArr).toHaveLength(10);
+        expect(articleArr).toBeSortedBy("created_at", { descending: true });
+        expect(articleArr[0].comment_count).toBe(2);
+        expect(articleArr[9].comment_count).toBe(0);
+        articleArr.forEach((article) => {
           expect(article).not.toHaveProperty("body");
           expect(article).toMatchObject({
             author: expect.any(String),
@@ -80,6 +80,200 @@ describe("GET /api/articles", () => {
           });
         });
       });
+  });
+  describe("GET /api/articles (sort queries)", () => {
+    test("200: Responds with an array of articles sorted by any valid column, defaulting to descending order of creation", () => {
+      return request(app)
+      .get("/api/articles?sort_by=author")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body;
+        expect(articles.articleArr).toHaveLength(10);
+        expect(articles.articleArr).toBeSortedBy("author", {descending: true});
+        expect(Array.isArray(articles.articleArr)).toBe(true)
+      });
+    });
+    test("200: Articles can be sorted in either descending (default) or ascending order", () => {
+      return request(app)
+      .get("/api/articles?order=asc")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body;
+        expect(articles.articleArr).toHaveLength(10);
+        expect(articles.articleArr).toBeSortedBy("created_at");
+      });
+    });
+    test("200: Articles can be sorted with both the order and sort_by queries", () => {
+      return request(app)
+      .get("/api/articles?sort_by=comment_count&order=asc")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body;
+        expect(articles.articleArr).toHaveLength(10);
+        expect(articles.articleArr).toBeSortedBy("comment_count");
+      });
+    });
+    test("400: Responds with a bad request error if query is invalid", () => {
+      return request(app)
+      .get("/api/articles?banana=desc")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+    });
+    test("400: Responds with a bad request error if the sort_by query value is invalid", () => {
+      return request(app)
+      .get("/api/articles?sort_by=banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+    });
+    test("400: Responds with a bad request error if the order query value is invalid", () => {
+      return request(app)
+      .get("/api/articles?order=banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request");
+      });
+    });
+  });
+  
+  describe("GET /api/articles (topic query)", () => {
+    test("200: Responds with an array of articles filtered by the specified topic", () => {
+      return request(app)
+      .get("/api/articles?topic=cats")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body;
+        expect(articles.articleArr).toHaveLength(1);
+        expect(articles.articleArr).toEqual([{
+          author: "rogersop",
+          title: "UNCOVERED: catspiracy to bring down democracy",
+          article_id: 5,
+          comment_count: 2,
+          topic: "cats",
+          created_at: expect.any(String),
+          votes: expect.any(Number),
+          article_img_url: expect.any(String)
+        }]);
+      });
+    });
+    test("200: Responds with an empty array when the applied filter is valid but no articles with that topic exist", () => {
+      return request(app)
+      .get("/api/articles?topic=paper")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body;
+        expect(articles.articleArr).toHaveLength(0);      
+      });
+    });
+    test("404: Responds with a not found error when the filter value is invalid", () => {
+      return request(app)
+      .get("/api/articles?topic=picnics")
+      .expect(404)
+      .then((response) => {
+        expect(response.body.msg).toBe("Topic category not found")
+      });
+    });
+  });
+  describe("GET /api/articles (pagination)", () => {
+    test("200: Responds with an array of articles limited to the number specified", () => {
+      return request(app)
+      .get("/api/articles?limit=5")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body;
+        expect(articles.articleArr).toBeSortedBy("created_at", {descending: true})
+        expect(articles.articleArr).toHaveLength(5);
+        expect(articles.total_count).toBe(13);
+      });
+    });
+    describe("When a page number is specified, returns only articles on that page", () => {
+      test("200: Limit specified", () => {
+        return request(app)
+        .get("/api/articles?limit=5&p=2")
+        .expect(200)
+        .then((response) => {
+          const {articles} = response.body;
+          expect(articles.articleArr).toHaveLength(5);
+          expect(articles.articleArr[0].article_id).toBe(5);
+          expect(articles.articleArr[1].article_id).toBe(1);
+          expect(articles.articleArr[2].article_id).toBe(9);
+          expect(articles.articleArr[3].article_id).toBe(10);
+          expect(articles.articleArr[4].article_id).toBe(4);
+        });
+      });
+      test("200: Limit not specified", () => {
+        return request(app)
+        .get("/api/articles?p=2")
+        .expect(200)
+        .then((response) => {
+          const {articles} = response.body;
+          expect(articles.articleArr).toHaveLength(3);
+          expect(articles.articleArr[0].article_id).toBe(8);
+          expect(articles.articleArr[2].article_id).toBe(7);
+          expect(articles.articleArr).toBeSortedBy("created_at", {descending: true});
+        });
+      });
+      test("200: Limit higher than total article count", () => {
+        return request(app)
+        .get("/api/articles?limit=200")
+        .expect(200)
+        .then((response) => {
+          const {articles} = response.body;
+          expect(articles.articleArr).toHaveLength(13)
+        });
+      });
+    });
+    test("200: When articles are filtered, total_count displays the total articles with the filter applied", () => {
+      return request(app)
+        .get("/api/articles?limit=5&p=1&topic=mitch")
+        .expect(200)
+        .then((response) => {
+          const {articles} = response.body;
+          expect(articles.articleArr).toHaveLength(5);
+          expect(articles.articleArr[0].article_id).toBe(3);
+          expect(articles.articleArr[1].article_id).toBe(6);
+          expect(articles.articleArr[2].article_id).toBe(2);
+          expect(articles.articleArr[3].article_id).toBe(12);
+          expect(articles.articleArr[4].article_id).toBe(13);
+          expect(articles.total_count).toBe(12);
+        });
+    });
+    test("200: Responds with an empty array when the page number is to high to show any articles", () => {
+      return request(app)
+      .get("/api/articles?p=200")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body
+        expect(articles.articleArr).toHaveLength(0)
+      });
+    });
+    test("400: Responds with bad request error when specified limit is not a number", () => {
+      return request(app)
+      .get("/api/articles?limit=banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request")
+      });
+    });
+    test("400: Responds with bad request error when specified page is not a number", () => {
+      return request(app)
+      .get("/api/articles?p=banana")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request")
+      });
+    });
+    test("400: Responds with bad request error when query is invalid", () => {
+      return request(app)
+      .get("/api/articles?limmit=5")
+      .expect(400)
+      .then((response) => {
+        expect(response.body.msg).toBe("Bad Request")
+      });
+    });    
   });
 });
 
@@ -369,103 +563,6 @@ describe("GET /api/users", () => {
   });  
 });
 
-describe("GET /api/articles (sort queries)", () => {
-  test("200: Responds with an array of articles sorted by any valid column, defaulting to descending order of creation", () => {
-    return request(app)
-    .get("/api/articles?sort_by=author")
-    .expect(200)
-    .then((response) => {
-      const {articles} = response.body;
-      expect(articles).toHaveLength(13);
-      expect(articles).toBeSortedBy("author", {descending: true});
-      expect(Array.isArray(articles)).toBe(true)
-    });
-  });
-  test("200: Articles can be sorted in either descending (default) or ascending order", () => {
-    return request(app)
-    .get("/api/articles?order=asc")
-    .expect(200)
-    .then((response) => {
-      const {articles} = response.body;
-      expect(articles).toHaveLength(13);
-      expect(articles).toBeSortedBy("created_at");
-    });
-  });
-  test("200: Articles can be sorted with both the order and sort_by queries", () => {
-    return request(app)
-    .get("/api/articles?sort_by=comment_count&order=asc")
-    .expect(200)
-    .then((response) => {
-      const {articles} = response.body;
-      expect(articles).toHaveLength(13);
-      expect(articles).toBeSortedBy("comment_count");
-    });
-  });
-  test("400: Responds with a bad request error if query is invalid", () => {
-    return request(app)
-    .get("/api/articles?banana=desc")
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe("Bad Request");
-    });
-  });
-  test("400: Responds with a bad request error if the sort_by query value is invalid", () => {
-    return request(app)
-    .get("/api/articles?sort_by=banana")
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe("Bad Request");
-    });
-  });
-  test("400: Responds with a bad request error if the order query value is invalid", () => {
-    return request(app)
-    .get("/api/articles?order=banana")
-    .expect(400)
-    .then((response) => {
-      expect(response.body.msg).toBe("Bad Request");
-    });
-  });
-});
-
-describe("GET /api/articles (topic query)", () => {
-  test("200: Responds with an array of articles filtered by the specified topic", () => {
-    return request(app)
-    .get("/api/articles?topic=cats")
-    .expect(200)
-    .then((response) => {
-      const {articles} = response.body;
-      expect(articles).toHaveLength(1);
-      expect(articles).toEqual([{
-        author: "rogersop",
-        title: "UNCOVERED: catspiracy to bring down democracy",
-        article_id: 5,
-        comment_count: 2,
-        topic: "cats",
-        created_at: expect.any(String),
-        votes: expect.any(Number),
-        article_img_url: expect.any(String)
-      }]);
-    });
-  });
-  test("200: Responds with an empty array when the applied filter is valid but no articles with that topic exist", () => {
-    return request(app)
-    .get("/api/articles?topic=paper")
-    .expect(200)
-    .then((response) => {
-      const {articles} = response.body;
-      expect(articles).toHaveLength(0);      
-    });
-  });
-  test("404: Responds with a not found error when the filter value is invalid", () => {
-    return request(app)
-    .get("/api/articles?topic=picnics")
-    .expect(404)
-    .then((response) => {
-      expect(response.body.msg).toBe("Topic category not found")
-    });
-  });
-});
-
 describe("GET /api/articles/:article_id (comment_count)", () => {
   test("200: Responds with the article at the specified ID, adding a comment_count property", () => {
     return request(app)
@@ -718,3 +815,4 @@ describe("POST /api/articles", () => {
     });
   });
 });
+

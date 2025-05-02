@@ -14,8 +14,9 @@
       ]
     }
   },
-  "GET /api/articles": {
-    "description": "serves an array of all articles in reverse chronological order of creation; article content is not provided",
+  "GET /api/articles": {    
+    "description": "serves an array of articles in reverse chronological order of creation; article content is not provided",
+    "defaultLength": 10,
     "exampleResponse": {
       "articles": [
         {
@@ -61,6 +62,17 @@
         "votes": 0,
         "article_img_url": "https://nice.pics/pink-cat-pic.jpg"    
       }]
+    }
+  },
+  "GET /api/articles (pagination)": {
+    "limit": {
+      "description": "adds a limit to the number of articles shown and provides the total number of available articles, taking any filters into account",
+      "defaultValue": 10,
+      "acceptedValues": "any integer"
+    },
+    "p": {
+      "description": "specifies the page to start on, calculated using the limit",
+      "acceptedValues": "any integer"
     }
   },
   "GET /api/articles/:article_id": {

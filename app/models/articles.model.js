@@ -3,7 +3,7 @@ const db = require("../../db/connection");
 
 // GET
 
-const selectArticles = (queries) => {
+const selectArticles = (queries) => {    
     let queryString = `
         SELECT articles.author, articles.title, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,
         COUNT(comments.article_id)::INT AS comment_count    
@@ -14,21 +14,26 @@ const selectArticles = (queries) => {
     const queryValues = [];
     const validOrder = ["ASC", "DESC"];
     const validQueries = ["author", "title", "article_id", "topic", "created_at", "votes", "article_img_url", "comment_count"];
-    
     if (queries.sort_by && !validQueries.includes(queries.sort_by)) {
         return Promise.reject({status: 400, msg: "Bad Request"});
     };  
     if (queries.order && !validOrder.includes(queries.order.toUpperCase())) {
         return Promise.reject({status: 400, msg: "Bad Request"});
     };  
+    if (queries.limit && Number(queries.limit) / 1 !== Number(queries.limit)) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    }
+    if (queries.p && Number(queries.p) / 1 !== Number(queries.p)) {
+        return Promise.reject({status: 400, msg: "Bad Request"});
+    }
     if (queries.topic) {
         return isTopicValid(queries.topic)
-        .then((result) => {            
+        .then(() => {            
             queryString += ` WHERE topic = $${++totalQueries} GROUP BY articles.article_id ORDER BY created_at DESC`;                
             queryValues.push(queries.topic); 
             return db.query(queryString, queryValues)
-            .then((result) => {        
-                return result.rows;
+            .then((result) => {    
+                return paginator(result.rows, queries.limit, queries.p)
             });        
         });
     };
@@ -56,8 +61,8 @@ const selectArticles = (queries) => {
     };  
       
     return db.query(queryString, queryValues)
-    .then((result) => {         
-        return result.rows;
+    .then((result) => { 
+        return paginator(result.rows, queries.limit, queries.p)
         });
 };
 
@@ -138,7 +143,6 @@ const addNewArticle = (article) => {
                 INSERT INTO articles (author, title, body, topic, article_img_url)
                 VALUES($1, $2, $3, $4, $5) RETURNING *`, [article.author, article.title, article.body, article.topic, article.article_img_url])
             .then((result) => {
-                console.log(result)
                 const {article_id} = result.rows[0];
                 return db.query(`
                     SELECT articles.author, articles.title, articles.body, articles.article_id, articles.topic, articles.created_at, articles.votes, articles.article_img_url,
@@ -197,4 +201,33 @@ const isAuthorValid = (author) => {
     }); 
 };
 
+const paginator = (array, limit, p) => {
+        let lowerLimit = 0;
+        let upperLimit = 10;    
+        const articles = {
+            total_count: array.length,
+            articleArr: array.slice(lowerLimit, upperLimit),
+        };
+        if (limit) {
+            if (p) {
+                upperLimit = limit * p;
+                lowerLimit = upperLimit - limit;
+                articles.articleArr = array.slice(lowerLimit, upperLimit);
+                return articles;
+            } else {
+                articles.articleArr = array.slice(0, limit);
+                return articles;
+            };
+        };
+        if (p) {
+            upperLimit = upperLimit * p
+            lowerLimit = upperLimit - 10
+            articles.articleArr = array.slice(lowerLimit, upperLimit)
+            return articles            
+        };
+        return articles;
+};
 module.exports = { selectArticlesById, selectArticles, selectArticleComments, addCommentToArticle, updateArticleVotes, addNewArticle }
+
+
+// NEW TESTS ADDED ON LINES 219 and 162!!!!!!!!!!
