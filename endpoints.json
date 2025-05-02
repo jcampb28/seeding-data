@@ -148,6 +148,13 @@
   },
   "POST /api/articles": {
       "description": "add a new article to the articles table and returns the new article, using a default image url if one is not provided",
+      "exampleInput" : {
+        "author": "rogersop",
+        "title": "A very interesting article on paper",
+        "body": "Paper is really interesting",
+        "topic": "paper",
+        "article_img_url": "https://nice.pics/paper.jpg"
+      },
       "expectedResponse": {
         "author": "rogersop",
         "title": "A very interesting article on paper",
@@ -161,6 +168,11 @@
       },
       "defaultArticleImg": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
   }, 
+  "POST /api/topics": {
+    "description": "adds a new topic to the available topics and returns the added topic",
+    "exampleInput": {"slug": "any string", "description": "any string"},
+    "expectedResponse": {"slug": "any string", "description": "any string", "img_url": null}
+  },
   "PATCH: /api/articles/:article_id": {
     "description": "updates the number of votes for the specified article and returns an object containing the article; vote count can be positive or negative",
     "exampleInput": {"inc_votes": 3},

@@ -816,7 +816,7 @@ describe("POST /api/articles", () => {
       expect(article.article_img_url).toBe("https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700");    
     });
   });
-  test("400: Responds with a bad request error if the comment object has incorrect keys", () => {
+  test("400: Responds with a bad request error if the article object has incorrect keys", () => {
     const newArticle = {
       cheesecake: "rogersop",
       chocolate: "A very interesting article on paper",
@@ -880,3 +880,44 @@ describe("POST /api/articles", () => {
   });
 });
 
+describe("POST: /api/topics", () => {
+  test("201: Adds a topic to the list of available topics", () => {
+    const newTopic = {slug: "fruit", description: "Tasty!"};
+    return request(app)
+    .post("/api/topics")
+    .send(newTopic)
+    .expect(201)
+    .then((response) => {
+      const {topic} = response.body;
+      expect(topic).toEqual({
+        slug: "fruit",
+        description: "Tasty!",
+        img_url: null,
+      });
+      return db.query(`SELECT * FROM topics`)
+      .then((result) => {
+        expect(result.rows).toHaveLength(4);
+      });
+    });
+  });
+  test("400: Responds with a bad request error if a topic with that slug already exists", () => {
+    const newTopic = {slug: "paper", description: "Tasty!"};
+    return request(app)
+    .post("/api/topics")
+    .send(newTopic)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Duplicate primary key")
+    });
+  });
+  test("400: Responds with a bad request error if the new topic object has invalid keys", () => {
+    const newTopic = {banana: "paper", picnic: "Tasty!"};
+    return request(app)
+    .post("/api/topics")
+    .send(newTopic)
+    .expect(400)
+    .then((response) => {
+      expect(response.body.msg).toBe("Bad Request")
+    });
+  });
+});
