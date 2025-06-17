@@ -41,7 +41,8 @@ const getArticleComments = (req, res, next) => {
 
 // POST
 
-const postCommentToArticle = (req, res, next) => {    
+const postCommentToArticle = (req, res, next) => { 
+    console.log(req.body)   
     const {username, body} = req.body;
     const {article_id} = req.params;
     addCommentToArticle(username, body, article_id)

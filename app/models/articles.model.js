@@ -1,5 +1,5 @@
-const { response } = require("../../api");
 const db = require("../../db/connection");
+const {paginator, isQueryBad} = require("../app.utils")
 
 // GET
 
@@ -98,7 +98,7 @@ const selectArticleComments = (articleId, queries) => {
     if (queries.p && Number(queries.p) / 1 !== Number(queries.p)) {
         return Promise.reject({status: 400, msg: "Bad Request"});
     }
-   
+    
     return db.query(`SELECT * FROM articles WHERE article_id = $1`, [articleId])
     .then((result) => {        
         if (result.rows.length === 0) {
@@ -243,32 +243,8 @@ const isAuthorValid = (author) => {
     .then((result) => {
         if (result.rows.length === 0) {
             return Promise.reject({status: 404, msg: "User not found"});  
-        };        
+        }       
     }); 
-};
-
-const paginator = (array, limit, p) => {
-        let lowerLimit = 0;
-        let upperLimit = 10;    
-        let resultsArr = array.slice(lowerLimit, upperLimit)
-        if (limit) {
-            if (p) {
-                upperLimit = limit * p;
-                lowerLimit = upperLimit - limit;
-                resultsArr = array.slice(lowerLimit, upperLimit);
-                return resultsArr;
-            } else {
-                resultsArr = array.slice(0, limit);
-                return resultsArr;
-            };
-        };
-        if (p) {
-            upperLimit = upperLimit * p
-            lowerLimit = upperLimit - 10
-            resultsArr = array.slice(lowerLimit, upperLimit)
-            return resultsArr          
-        };
-        return resultsArr;
 };
 
 
