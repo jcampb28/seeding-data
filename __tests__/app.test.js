@@ -165,9 +165,19 @@ describe("GET /api/articles", () => {
       .expect(200)
       .then((response) => {
         const {articles} = response.body;
-        expect(articles.resultsArr).toHaveLength(0);      
+        expect(articles.resultsArr).toHaveLength(0);    
       });
     });
+    test("200: Sorts and orders filtered articles when sort_by and order queries are included", () => {
+      return request(app)
+      .get("/api/articles?topic=mitch&order=asc&sort_by=comment_count")
+      .expect(200)
+      .then((response) => {
+        const {articles} = response.body;
+        expect(articles.total_count).toBe(12);
+        expect(articles.resultsArr).toBeSortedBy("comment_count")  
+      })
+    })
     test("404: Responds with a not found error when the filter value is invalid", () => {
       return request(app)
       .get("/api/articles?topic=picnics")
